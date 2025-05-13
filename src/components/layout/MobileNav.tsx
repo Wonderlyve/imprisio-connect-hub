@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Box, Info, User } from 'lucide-react';
+import { Home, Users, Box, Info, User, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const MobileNav = () => {
@@ -12,7 +12,7 @@ const MobileNav = () => {
     { icon: Home, label: 'Accueil', path: '/' },
     { icon: Users, label: 'Imprimeurs', path: '/imprimeurs' },
     { icon: Box, label: 'Services', path: '/services' },
-    { icon: Info, label: 'À propos', path: '/about' },
+    { icon: Mail, label: 'Contact', path: '/contact' },
     { icon: User, label: 'Compte', path: '/login' },
   ];
   

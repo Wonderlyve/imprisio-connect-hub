@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { User, LogIn, Menu, X, Home, Box, ChartBar } from "lucide-react";
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,12 +34,15 @@ const Navbar = () => {
         {/* Authentication Buttons */}
         <div className="hidden md:flex items-center space-x-3">
           {isLoggedIn ? (
-            <Link to="/dashboard">
-              <Button variant="outline" className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                Mon compte
-              </Button>
-            </Link>
+            <>
+              <NotificationBell />
+              <Link to="/dashboard">
+                <Button variant="outline" className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  Mon compte
+                </Button>
+              </Link>
+            </>
           ) : (
             <>
               <Link to="/login">
@@ -55,7 +59,8 @@ const Navbar = () => {
         </div>
         
         {/* Mobile menu button */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
+          {isLoggedIn && <NotificationBell />}
           <button onClick={toggleMenu} className="p-2">
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
