@@ -11,6 +11,12 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import RegisterPrinter from "./pages/auth/RegisterPrinter";
 import NotFound from "./pages/NotFound";
+import Imprimeurs from "./pages/Imprimeurs";
+import ImprimeurDetail from "./pages/ImprimeurDetail";
+import Services from "./pages/Services";
+import About from "./pages/About";
+import Dashboard from "./pages/dashboard/Dashboard";
+import PrinterDashboard from "./pages/dashboard/PrinterDashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +32,13 @@ const App = () => (
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="register-printer" element={<RegisterPrinter />} />
+            <Route path="imprimeurs" element={<Imprimeurs />} />
+            <Route path="imprimeurs/:id" element={<ImprimeurDetail />} />
+            <Route path="services" element={<Services />} />
+            <Route path="services/:category" element={<Services />} />
+            <Route path="about" element={<About />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="printer-dashboard" element={<PrinterDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
