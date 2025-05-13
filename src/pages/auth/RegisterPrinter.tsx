@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,7 @@ const RegisterPrinter = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleNextStep = () => {
     if (!fullName || !email || !phone || !password || !confirmPassword) {
@@ -70,11 +71,15 @@ const RegisterPrinter = () => {
     setIsLoading(true);
     
     try {
-      // Intégration Supabase sera ajoutée ici
+      // Simulate registration process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       toast({
-        title: "Information",
-        description: "L'intégration Supabase est nécessaire pour l'inscription. Veuillez cliquer sur le bouton Supabase en haut à droite.",
+        title: "Inscription réussie",
+        description: "Votre compte imprimeur a été créé avec succès.",
       });
+      
+      navigate('/login');
     } catch (error) {
       toast({
         title: "Erreur d'inscription",
@@ -99,8 +104,8 @@ const RegisterPrinter = () => {
           <CardContent className="space-y-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="personal">Informations personnelles</TabsTrigger>
-                <TabsTrigger value="business">Informations professionnelles</TabsTrigger>
+                <TabsTrigger value="personal" className="text-xs sm:text-sm">Infos personnelles</TabsTrigger>
+                <TabsTrigger value="business" className="text-xs sm:text-sm">Infos professionnelles</TabsTrigger>
               </TabsList>
               
               <TabsContent value="personal">
@@ -201,11 +206,12 @@ const RegisterPrinter = () => {
                       className="min-h-[100px]"
                     />
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-start space-x-2">
                     <Checkbox 
                       id="terms" 
                       checked={acceptTerms}
                       onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                      className="mt-1"
                     />
                     <label htmlFor="terms" className="text-sm text-gray-600">
                       J'accepte les{" "}

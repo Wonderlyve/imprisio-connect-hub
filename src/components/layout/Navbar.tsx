@@ -1,17 +1,42 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { User, LogIn, Menu, X, Home, Box, ChartBar } from "lucide-react";
+import { 
+  User, 
+  LogIn, 
+  Menu, 
+  X, 
+  Home, 
+  Box, 
+  ChartBar,
+  LogOut 
+} from "lucide-react";
 import NotificationBell from './NotificationBell';
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Cette valeur viendra de Supabase plus tard
+  const { currentUser, logout, isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Déconnexion réussie",
+      description: "À bientôt!",
+    });
+    navigate('/');
+    toggleMenu();
+  };
+
+  const isDashboardLink = currentUser?.role === 'printer' ? '/printer-dashboard' : '/dashboard';
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -27,6 +52,7 @@ const Navbar = () => {
           <Link to="/" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Accueil</Link>
           <Link to="/services" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Services</Link>
           <Link to="/imprimeurs" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Imprimeurs</Link>
+          <Link to="/request-quote" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Demander un devis</Link>
           <Link to="/about" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">À propos</Link>
           <Link to="/contact" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Contact</Link>
         </div>
@@ -36,12 +62,17 @@ const Navbar = () => {
           {isLoggedIn ? (
             <>
               <NotificationBell />
-              <Link to="/dashboard">
-                <Button variant="outline" className="flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  Mon compte
+              <div className="flex items-center space-x-2">
+                <Link to={isDashboardLink}>
+                  <Button variant="outline" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    {currentUser?.fullName}
+                  </Button>
+                </Link>
+                <Button variant="ghost" onClick={handleLogout} className="flex items-center text-red-500 hover:text-red-700">
+                  <LogOut className="h-4 w-4 mr-2" />
                 </Button>
-              </Link>
+              </div>
             </>
           ) : (
             <>
@@ -83,6 +114,9 @@ const Navbar = () => {
               <ChartBar className="h-5 w-5 mr-2" />
               Imprimeurs
             </Link>
+            <Link to="/request-quote" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
+              Demander un devis
+            </Link>
             <Link to="/about" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
               À propos
             </Link>
@@ -92,12 +126,18 @@ const Navbar = () => {
             
             <div className="border-t pt-4 mt-2">
               {isLoggedIn ? (
-                <Link to="/dashboard" onClick={toggleMenu}>
-                  <Button className="w-full imprisio-button">
-                    <User className="h-4 w-4 mr-2" />
-                    Mon compte
+                <>
+                  <Link to={isDashboardLink} onClick={toggleMenu}>
+                    <Button className="w-full mb-3 imprisio-button">
+                      <User className="h-4 w-4 mr-2" />
+                      Mon compte
+                    </Button>
+                  </Link>
+                  <Button onClick={handleLogout} variant="outline" className="w-full text-red-500 border-red-200">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Déconnexion
                   </Button>
-                </Link>
+                </>
               ) : (
                 <>
                   <Link to="/login" onClick={toggleMenu}>

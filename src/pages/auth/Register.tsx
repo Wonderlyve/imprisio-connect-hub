@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
   const [fullName, setFullName] = useState('');
@@ -16,6 +17,15 @@ const Register = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,11 +60,15 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // Intégration Supabase sera ajoutée ici
+      // Simulate registration process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       toast({
-        title: "Information",
-        description: "L'intégration Supabase est nécessaire pour l'inscription. Veuillez cliquer sur le bouton Supabase en haut à droite.",
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.",
       });
+      
+      navigate('/login');
     } catch (error) {
       toast({
         title: "Erreur d'inscription",

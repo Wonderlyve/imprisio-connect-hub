@@ -1,42 +1,46 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Box, Info, User, Mail } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, ShoppingBag, User, MessageSquare, HelpCircle, LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MobileNav = () => {
   const location = useLocation();
-  const path = location.pathname;
+  const navigate = useNavigate();
+  const { isLoggedIn, currentUser } = useAuth();
   
   const navItems = [
-    { icon: Home, label: 'Accueil', path: '/' },
-    { icon: Users, label: 'Imprimeurs', path: '/imprimeurs' },
-    { icon: Box, label: 'Services', path: '/services' },
-    { icon: Mail, label: 'Contact', path: '/contact' },
-    { icon: User, label: 'Compte', path: '/login' },
+    { label: 'Accueil', icon: <Home className="w-5 h-5" />, path: '/' },
+    { label: 'Services', icon: <ShoppingBag className="w-5 h-5" />, path: '/services' },
+    { label: 'Devis', icon: <HelpCircle className="w-5 h-5" />, path: '/request-quote' },
+    { label: 'Contact', icon: <MessageSquare className="w-5 h-5" />, path: '/contact' },
+    { 
+      label: isLoggedIn ? 'Compte' : 'Connexion', 
+      icon: isLoggedIn ? <User className="w-5 h-5" /> : <LogIn className="w-5 h-5" />, 
+      path: isLoggedIn ? (currentUser?.role === 'printer' ? '/printer-dashboard' : '/dashboard') : '/login'
+    },
   ];
-  
+
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-      <div className="flex justify-around items-center h-16">
-        {navItems.map((item, index) => {
-          const isActive = path === item.path || 
-                          (item.path !== '/' && path.startsWith(item.path));
-          
-          return (
-            <Link 
-              to={item.path}
-              key={index}
-              className={cn(
-                "flex flex-col items-center justify-center w-full h-full",
-                isActive ? "text-imprisio-primary" : "text-gray-500"
-              )}
-            >
-              <item.icon className="h-5 w-5 mb-1" />
-              <span className="text-xs">{item.label}</span>
-            </Link>
-          );
-        })}
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-40 px-2 py-2">
+      <div className="grid grid-cols-5 gap-1">
+        {navItems.map((item, index) => (
+          <Link
+            key={index}
+            to={item.path}
+            className={cn(
+              "flex flex-col items-center justify-center text-xs py-1 rounded",
+              location.pathname === item.path
+                ? "text-imprisio-primary"
+                : "text-gray-500 hover:text-imprisio-primary"
+            )}
+          >
+            {item.icon}
+            <span className="mt-1">{item.label}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );
