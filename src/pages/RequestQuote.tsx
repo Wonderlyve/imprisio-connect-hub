@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { FileUpload, Send, FileCheck } from "lucide-react";
+import { File, Send, FileCheck } from "lucide-react";
 
 const RequestQuote = () => {
   const [fullName, setFullName] = useState('');
@@ -159,7 +159,7 @@ const RequestQuote = () => {
                           </>
                         ) : (
                           <>
-                            <FileUpload className="h-5 w-5" />
+                            <File className="h-5 w-5" />
                             <span>Parcourir les fichiers...</span>
                           </>
                         )}
