@@ -92,7 +92,12 @@ export const useProfile = () => {
         return { success: false, url: null };
       }
 
-      const url = `${supabase.storageUrl}/object/public/imprisio/${filePath}`;
+      // Correction ici : construire l'URL correctement sans utiliser storageUrl
+      const { data: publicUrlData } = supabase.storage
+        .from('imprisio')
+        .getPublicUrl(filePath);
+        
+      const url = publicUrlData.publicUrl;
       return { success: true, url };
     } catch (error) {
       console.error("Error uploading avatar:", error);

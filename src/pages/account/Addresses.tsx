@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Loader2, Home, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAddress, Address, useAddresses } from "@/hooks/use-addresses";
+import { Address, useAddresses } from "@/hooks/use-addresses";
 import { useToast } from "@/hooks/use-toast";
 
 const Addresses = () => {
