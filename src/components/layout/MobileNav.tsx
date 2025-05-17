@@ -1,14 +1,12 @@
 
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, User, BadgePercent, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
 const MobileNav = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { isLoggedIn, currentUser } = useAuth();
   
   const navItems = [

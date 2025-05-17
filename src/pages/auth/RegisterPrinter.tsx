@@ -1,35 +1,45 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer } from "lucide-react";
+import { Printer, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from '@/integrations/supabase/client';
 
 const RegisterPrinter = () => {
-  const [activeTab, setActiveTab] = useState("personal");
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessAddress, setBusinessAddress] = useState('');
-  const [businessDescription, setBusinessDescription] = useState('');
+  const [phone, setPhone] = useState('');
+  const [description, setDescription] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { isLoggedIn, signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleNextStep = () => {
-    if (!fullName || !email || !phone || !password || !confirmPassword) {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!fullName || !email || !password || !confirmPassword || !businessName || !businessAddress) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs personnels.",
+        description: "Veuillez remplir tous les champs obligatoires.",
         variant: "destructive",
       });
       return;
@@ -39,21 +49,6 @@ const RegisterPrinter = () => {
       toast({
         title: "Erreur",
         description: "Les mots de passe ne correspondent pas.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setActiveTab("business");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!businessName || !businessAddress || !businessDescription) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs concernant votre entreprise.",
         variant: "destructive",
       });
       return;
@@ -71,16 +66,56 @@ const RegisterPrinter = () => {
     setIsLoading(true);
     
     try {
-      // Simulate registration process
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Register user first
+      const result = await signUp(email, password, fullName);
       
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte imprimeur a été créé avec succès.",
-      });
-      
-      navigate('/login');
+      if (result.success) {
+        // Get session to get user ID
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (sessionData?.session?.user) {
+          // Create printer record
+          const { error: printerError } = await supabase
+            .from('printers')
+            .insert({
+              user_id: sessionData.session.user.id,
+              business_name: businessName,
+              description: description,
+              address: businessAddress,
+              phone: phone
+            });
+            
+          // Update profile role
+          await supabase
+            .from('profiles')
+            .update({ role: 'printer' })
+            .eq('id', sessionData.session.user.id);
+          
+          if (printerError) {
+            console.error("Error creating printer profile:", printerError);
+            toast({
+              title: "Erreur d'inscription",
+              description: "Votre compte a été créé mais il y a eu un problème avec l'enregistrement de votre imprimerie.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Inscription réussie",
+              description: "Votre compte d'imprimeur a été créé avec succès.",
+            });
+          }
+        }
+        
+        navigate('/login');
+      } else {
+        toast({
+          title: "Erreur d'inscription",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error("Error during printer registration:", error);
       toast({
         title: "Erreur d'inscription",
         description: "Une erreur est survenue lors de l'inscription.",
@@ -92,24 +127,20 @@ const RegisterPrinter = () => {
   };
 
   return (
-    <div className="imprisio-section bg-imprisio-light min-h-[80vh] flex items-center justify-center">
-      <div className="w-full max-w-lg p-4">
+    <div className="imprisio-section bg-imprisio-light min-h-[80vh] py-12">
+      <div className="w-full max-w-2xl mx-auto p-4">
         <Card className="w-full">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Devenir imprimeur partenaire</CardTitle>
+            <CardTitle className="text-2xl text-center">Inscription Imprimeur</CardTitle>
             <CardDescription className="text-center">
               Créez votre compte professionnel pour proposer vos services d'impression
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="personal" className="text-xs sm:text-sm">Infos personnelles</TabsTrigger>
-                <TabsTrigger value="business" className="text-xs sm:text-sm">Infos professionnelles</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="personal">
-                <div className="space-y-4 py-2">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Informations personnelles</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="full-name" className="text-sm font-medium">Nom complet</label>
                     <Input 
@@ -128,17 +159,6 @@ const RegisterPrinter = () => {
                       placeholder="example@mail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-medium">Téléphone</label>
-                    <Input 
-                      id="phone"
-                      type="tel"
-                      placeholder="+243 XXX XXX XXX"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
                       required
                     />
                   </div>
@@ -164,19 +184,14 @@ const RegisterPrinter = () => {
                       required
                     />
                   </div>
-                  <Button 
-                    className="w-full imprisio-button"
-                    onClick={handleNextStep}
-                  >
-                    Suivant
-                  </Button>
                 </div>
-              </TabsContent>
+              </div>
               
-              <TabsContent value="business">
-                <form onSubmit={handleSubmit} className="space-y-4 py-2">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Informations sur l'imprimerie</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="business-name" className="text-sm font-medium">Nom de l'entreprise</label>
+                    <label htmlFor="business-name" className="text-sm font-medium">Nom de l'imprimerie</label>
                     <Input 
                       id="business-name"
                       placeholder="Imprimerie XYZ"
@@ -186,7 +201,16 @@ const RegisterPrinter = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="business-address" className="text-sm font-medium">Adresse de l'entreprise</label>
+                    <label htmlFor="phone" className="text-sm font-medium">Téléphone</label>
+                    <Input 
+                      id="phone"
+                      placeholder="+243 XXXXXXXXX"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label htmlFor="business-address" className="text-sm font-medium">Adresse de l'imprimerie</label>
                     <Input 
                       id="business-address"
                       placeholder="123 Rue Principale, Kinshasa"
@@ -195,59 +219,48 @@ const RegisterPrinter = () => {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label htmlFor="business-description" className="text-sm font-medium">Description de votre activité</label>
+                  <div className="space-y-2 md:col-span-2">
+                    <label htmlFor="description" className="text-sm font-medium">Description de votre activité</label>
                     <Textarea 
-                      id="business-description"
-                      placeholder="Décrivez vos services d'impression, vos spécialités..."
-                      value={businessDescription}
-                      onChange={(e) => setBusinessDescription(e.target.value)}
-                      required
-                      className="min-h-[100px]"
+                      id="description"
+                      placeholder="Décrivez votre imprimerie et les services que vous proposez..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="min-h-[120px]"
                     />
                   </div>
-                  <div className="flex items-start space-x-2">
-                    <Checkbox 
-                      id="terms" 
-                      checked={acceptTerms}
-                      onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                      className="mt-1"
-                    />
-                    <label htmlFor="terms" className="text-sm text-gray-600">
-                      J'accepte les{" "}
-                      <Link to="/terms" className="text-imprisio-primary hover:underline">
-                        conditions d'utilisation
-                      </Link>
-                      {" "}et la commission de 10% sur les commandes
-                    </label>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => setActiveTab("personal")}
-                    >
-                      Retour
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      className="flex-1 imprisio-button"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <span>Chargement...</span>
-                      ) : (
-                        <span className="flex items-center justify-center">
-                          <Printer className="mr-2 h-4 w-4" />
-                          S'inscrire
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </TabsContent>
-            </Tabs>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="terms" 
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                />
+                <label htmlFor="terms" className="text-sm text-gray-600">
+                  J'accepte les{" "}
+                  <Link to="/terms" className="text-imprisio-primary hover:underline">
+                    conditions d'utilisation
+                  </Link>
+                </label>
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full imprisio-button"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span>Chargement...</span>
+                ) : (
+                  <span className="flex items-center justify-center">
+                    <Printer className="mr-2 h-4 w-4" />
+                    S'inscrire en tant qu'imprimeur
+                  </span>
+                )}
+              </Button>
+            </form>
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-center text-gray-600">

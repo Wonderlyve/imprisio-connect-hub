@@ -17,7 +17,7 @@ const Register = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -60,15 +60,21 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // Simulate registration process
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await signUp(email, password, fullName);
       
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.",
-      });
-      
-      navigate('/login');
+      if (result.success) {
+        toast({
+          title: "Inscription réussie",
+          description: result.message,
+        });
+        navigate('/login');
+      } else {
+        toast({
+          title: "Erreur d'inscription",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Erreur d'inscription",

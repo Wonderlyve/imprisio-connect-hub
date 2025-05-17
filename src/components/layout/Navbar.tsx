@@ -27,8 +27,8 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt!",
@@ -65,7 +65,7 @@ const Navbar = () => {
                 <Link to={isDashboardLink}>
                   <Button variant="outline" className="flex items-center">
                     <User className="h-4 w-4 mr-2" />
-                    {currentUser?.fullName}
+                    {currentUser?.fullName || 'Mon Compte'}
                   </Button>
                 </Link>
                 <Button variant="ghost" onClick={handleLogout} className="flex items-center text-red-500 hover:text-red-700">
