@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ShoppingBag, User, MessageSquare, HelpCircle, LogIn } from 'lucide-react';
+import { Home, ShoppingBag, User, MessageSquare, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,13 +13,13 @@ const MobileNav = () => {
   
   const navItems = [
     { label: 'Accueil', icon: <Home className="w-5 h-5" />, path: '/' },
-    { label: 'Services', icon: <ShoppingBag className="w-5 h-5" />, path: '/services' },
-    { label: 'Devis', icon: <HelpCircle className="w-5 h-5" />, path: '/request-quote' },
-    { label: 'Contact', icon: <MessageSquare className="w-5 h-5" />, path: '/contact' },
+    { label: 'Catégories', icon: <ShoppingBag className="w-5 h-5" />, path: '/services' },
+    { label: 'Imprimeurs', icon: <Users className="w-5 h-5" />, path: '/imprimeurs' },
+    { label: 'Devis', icon: <MessageSquare className="w-5 h-5" />, path: '/request-quote' },
     { 
-      label: isLoggedIn ? 'Compte' : 'Connexion', 
-      icon: isLoggedIn ? <User className="w-5 h-5" /> : <LogIn className="w-5 h-5" />, 
-      path: isLoggedIn ? (currentUser?.role === 'printer' ? '/printer-dashboard' : '/dashboard') : '/login'
+      label: 'Compte', 
+      icon: <User className="w-5 h-5" />, 
+      path: isLoggedIn ? (currentUser?.role === 'printer' ? '/printer-dashboard' : '/account/profile') : '/login'
     },
   ];
 
@@ -32,7 +32,7 @@ const MobileNav = () => {
             to={item.path}
             className={cn(
               "flex flex-col items-center justify-center text-xs py-1 rounded",
-              location.pathname === item.path
+              location.pathname === item.path || location.pathname.startsWith(item.path + '/')
                 ? "text-imprisio-primary"
                 : "text-gray-500 hover:text-imprisio-primary"
             )}

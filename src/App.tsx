@@ -24,6 +24,13 @@ import PrinterDashboard from "./pages/dashboard/PrinterDashboard";
 import TermsOfService from "./pages/TermsOfService";
 import RequestQuote from "./pages/RequestQuote";
 
+// Account pages
+import AccountLayout from "./pages/account/AccountLayout";
+import Profile from "./pages/account/Profile";
+import Orders from "./pages/account/Orders";
+import Addresses from "./pages/account/Addresses";
+import Language from "./pages/account/Language";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -51,6 +58,16 @@ const App = () => (
                 <Route path="printer-dashboard" element={<PrinterDashboard />} />
                 <Route path="terms" element={<TermsOfService />} />
                 <Route path="request-quote" element={<RequestQuote />} />
+                
+                {/* Account routes */}
+                <Route path="account" element={<AccountLayout />}>
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="addresses" element={<Addresses />} />
+                  <Route path="language" element={<Language />} />
+                  <Route index element={<Profile />} />
+                </Route>
+                
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

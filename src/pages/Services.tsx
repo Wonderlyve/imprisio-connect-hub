@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, ShoppingBag, CreditCard, Truck, 
-  Package, ChevronRight
+  Package, ChevronRight, ArrowLeft
 } from 'lucide-react';
 
 interface Service {
@@ -103,11 +102,13 @@ const ServicesPage = () => {
 const ServicesList = () => {
   return (
     <>
-      <div className="text-center mb-12">
-        <h1 className="imprisio-title">Nos services d'impression</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Découvrez notre gamme complète de services d'impression personnalisée pour particuliers et professionnels
-        </p>
+      <div className="mb-6 flex items-center">
+        <Link to="/" className="mr-4">
+          <Button variant="ghost" size="sm" className="p-1">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </Link>
+        <h1 className="text-2xl md:text-3xl font-bold">Nos catégories d'impression</h1>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -158,8 +159,8 @@ const ServiceDetail = ({ service }: { service: Service }) => {
     <>
       <div className="mb-8">
         <Link to="/services" className="text-imprisio-primary hover:underline flex items-center mb-4">
-          <ChevronRight className="h-4 w-4 mr-1 rotate-180" />
-          Retour aux services
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Retour aux catégories
         </Link>
         
         <div className="grid md:grid-cols-2 gap-8 items-center">

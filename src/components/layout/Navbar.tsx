@@ -36,7 +36,7 @@ const Navbar = () => {
     toggleMenu();
   };
 
-  const isDashboardLink = currentUser?.role === 'printer' ? '/printer-dashboard' : '/dashboard';
+  const isDashboardLink = currentUser?.role === 'printer' ? '/printer-dashboard' : '/account/profile';
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -50,11 +50,9 @@ const Navbar = () => {
         {/* Navigation Desktop */}
         <div className="hidden md:flex items-center space-x-6">
           <Link to="/" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Accueil</Link>
-          <Link to="/services" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Services</Link>
+          <Link to="/services" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Catégories</Link>
           <Link to="/imprimeurs" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Imprimeurs</Link>
           <Link to="/request-quote" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Demander un devis</Link>
-          <Link to="/about" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">À propos</Link>
-          <Link to="/contact" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Contact</Link>
         </div>
         
         {/* Authentication Buttons */}
@@ -108,7 +106,7 @@ const Navbar = () => {
             </Link>
             <Link to="/services" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
               <Box className="h-5 w-5 mr-2" />
-              Services
+              Catégories
             </Link>
             <Link to="/imprimeurs" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
               <ChartBar className="h-5 w-5 mr-2" />
@@ -116,12 +114,6 @@ const Navbar = () => {
             </Link>
             <Link to="/request-quote" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
               Demander un devis
-            </Link>
-            <Link to="/about" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
-              À propos
-            </Link>
-            <Link to="/contact" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
-              Contact
             </Link>
             
             <div className="border-t pt-4 mt-2">
