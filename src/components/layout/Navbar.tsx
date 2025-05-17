@@ -10,7 +10,8 @@ import {
   Home, 
   Box, 
   ChartBar,
-  LogOut 
+  LogOut,
+  BadgePercent 
 } from "lucide-react";
 import NotificationBell from './NotificationBell';
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +53,7 @@ const Navbar = () => {
           <Link to="/" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Accueil</Link>
           <Link to="/services" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Catégories</Link>
           <Link to="/imprimeurs" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Imprimeurs</Link>
-          <Link to="/request-quote" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Demander un devis</Link>
+          <Link to="/promotions" className="text-imprisio-dark hover:text-imprisio-primary transition-colors">Promos</Link>
         </div>
         
         {/* Authentication Buttons */}
@@ -112,8 +113,9 @@ const Navbar = () => {
               <ChartBar className="h-5 w-5 mr-2" />
               Imprimeurs
             </Link>
-            <Link to="/request-quote" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
-              Demander un devis
+            <Link to="/promotions" onClick={toggleMenu} className="flex items-center py-2 text-imprisio-dark">
+              <BadgePercent className="h-5 w-5 mr-2" />
+              Promotions
             </Link>
             
             <div className="border-t pt-4 mt-2">

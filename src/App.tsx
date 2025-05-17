@@ -22,7 +22,7 @@ import OrderForm from "./pages/OrderForm";
 import Dashboard from "./pages/dashboard/Dashboard";
 import PrinterDashboard from "./pages/dashboard/PrinterDashboard";
 import TermsOfService from "./pages/TermsOfService";
-import RequestQuote from "./pages/RequestQuote";
+import Promotions from "./pages/Promotions";
 
 // Account pages
 import AccountLayout from "./pages/account/AccountLayout";
@@ -57,7 +57,7 @@ const App = () => (
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="printer-dashboard" element={<PrinterDashboard />} />
                 <Route path="terms" element={<TermsOfService />} />
-                <Route path="request-quote" element={<RequestQuote />} />
+                <Route path="promotions" element={<Promotions />} />
                 
                 {/* Account routes */}
                 <Route path="account" element={<AccountLayout />}>

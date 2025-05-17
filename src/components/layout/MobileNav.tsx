@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ShoppingBag, User, MessageSquare, Users } from 'lucide-react';
+import { Home, ShoppingBag, User, BadgePercent, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +15,7 @@ const MobileNav = () => {
     { label: 'Accueil', icon: <Home className="w-5 h-5" />, path: '/' },
     { label: 'Catégories', icon: <ShoppingBag className="w-5 h-5" />, path: '/services' },
     { label: 'Imprimeurs', icon: <Users className="w-5 h-5" />, path: '/imprimeurs' },
-    { label: 'Devis', icon: <MessageSquare className="w-5 h-5" />, path: '/request-quote' },
+    { label: 'Promos', icon: <BadgePercent className="w-5 h-5" />, path: '/promotions' },
     { 
       label: 'Compte', 
       icon: <User className="w-5 h-5" />, 

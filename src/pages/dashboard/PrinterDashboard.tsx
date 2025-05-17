@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Package, ShoppingCart, TrendingUp, DollarSign,
-  User, Settings, Plus, Edit, Trash2, Printer
+  User, Settings, Plus, Edit, Trash2, Printer, BadgePercent
 } from 'lucide-react';
+import PrinterPromotions from './PrinterPromotions';
 
 const PrinterDashboard = () => {
   const printerInfo = {
@@ -55,6 +56,10 @@ const PrinterDashboard = () => {
             <TabsTrigger value="produits" className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               Produits
+            </TabsTrigger>
+            <TabsTrigger value="promotions" className="flex items-center gap-2">
+              <BadgePercent className="h-4 w-4" />
+              Promotions
             </TabsTrigger>
             <TabsTrigger value="boutique" className="flex items-center gap-2">
               <Printer className="h-4 w-4" />
@@ -274,6 +279,10 @@ const PrinterDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="promotions">
+            <PrinterPromotions />
           </TabsContent>
           
           <TabsContent value="boutique">
