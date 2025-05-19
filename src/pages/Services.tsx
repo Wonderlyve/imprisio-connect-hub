@@ -1,105 +1,94 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, ShoppingBag, CreditCard, Truck, 
-  Package, ChevronRight, ArrowLeft
+  Package, ChevronRight, ArrowLeft, Loader2
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-interface Service {
+interface ServiceCategory {
   id: string;
   name: string;
-  icon: React.ElementType;
-  description: string;
-  path: string;
-  image: string;
-  price: string;
-  features: string[];
+  description?: string;
+  image_url?: string;
 }
 
-const services: Service[] = [
-  { 
-    id: 'flyers', 
-    name: 'Flyers & Brochures', 
-    icon: FileText, 
-    path: '/services/flyers',
-    description: 'Imprimez des flyers et des brochures personnalisés pour vos événements et promotions.',
-    image: 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?auto=format&fit=crop&q=80',
-    price: 'À partir de 8.000 FC',
-    features: ['Plusieurs formats disponibles', 'Papier de qualité', 'Livraison rapide', 'Petites et grandes quantités']
-  },
-  { 
-    id: 'tshirts', 
-    name: 'T-shirts Personnalisés', 
-    icon: ShoppingBag, 
-    path: '/services/tshirts',
-    description: 'Créez des t-shirts personnalisés avec votre design, logo ou message.',
-    image: 'https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&q=80',
-    price: 'À partir de 15.000 FC',
-    features: ['Toutes tailles disponibles', 'Impression durable', 'Plusieurs couleurs', 'Matériaux de qualité']
-  },
-  { 
-    id: 'banners', 
-    name: 'Bâches & Bannières', 
-    icon: FileText, 
-    path: '/services/banners',
-    description: 'Imprimez des bannières et bâches grand format pour vos événements et publicités.',
-    image: 'https://images.unsplash.com/photo-1492140269802-4232b5680782?auto=format&fit=crop&q=80',
-    price: 'À partir de 30.000 FC',
-    features: ['Grand format', 'Résistant aux intempéries', 'Haute résolution', 'Œillets inclus']
-  },
-  { 
-    id: 'business-cards', 
-    name: 'Cartes de visite', 
-    icon: CreditCard, 
-    path: '/services/business-cards',
-    description: 'Créez des cartes de visite professionnelles qui vous démarquent.',
-    image: 'https://images.unsplash.com/photo-1581093196277-9f397c262dc3?auto=format&fit=crop&q=80',
-    price: 'À partir de 10.000 FC',
-    features: ['Design élégant', 'Finition de qualité', 'Papier premium', 'Livraison rapide']
-  },
-  { 
-    id: 'mugs', 
-    name: 'Mugs & Accessoires', 
-    icon: ShoppingBag, 
-    path: '/services/mugs',
-    description: 'Personnalisez des mugs et accessoires avec vos designs préférés.',
-    image: 'https://images.unsplash.com/photo-1581067721837-13ab95130441?auto=format&fit=crop&q=80',
-    price: 'À partir de 12.000 FC',
-    features: ['Impression résistante', 'Lavable en machine', 'Plusieurs modèles', 'Idéal pour cadeaux']
-  },
-  { 
-    id: 'vinyl', 
-    name: 'Impressions Vinyle', 
-    icon: FileText, 
-    path: '/services/vinyl',
-    description: 'Impression sur vinyle de haute qualité pour intérieur et extérieur.',
-    image: 'https://images.unsplash.com/photo-1619537903429-eb3bf537167f?auto=format&fit=crop&q=80',
-    price: 'À partir de 20.000 FC',
-    features: ['Résistant aux UV', 'Application facile', 'Durée de vie longue', 'Découpe sur mesure']
-  }
-];
+const Services = () => {
+  const { category: categorySlug } = useParams<{ category?: string }>();
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
 
-const ServicesPage = () => {
-  const { category } = useParams<{ category?: string }>();
-  const selectedService = category ? services.find(s => s.id === category) : null;
-  
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('service_categories')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return;
+      }
+
+      const formattedCategories = data.map(category => ({
+        id: category.id,
+        name: category.name,
+        description: category.description,
+        image_url: category.image_url
+      }));
+
+      setCategories(formattedCategories);
+      
+      if (categorySlug && data.length > 0) {
+        const selected = data.find(c => c.id === categorySlug);
+        setSelectedCategory(selected || null);
+      }
+    } catch (error) {
+      console.error('Error in fetchCategories:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="imprisio-section bg-white min-h-screen">
+        <div className="imprisio-container py-10 flex justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-imprisio-primary" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="imprisio-section bg-white min-h-screen">
       <div className="imprisio-container">
-        {selectedService ? (
-          <ServiceDetail service={selectedService} />
+        {selectedCategory ? (
+          <ServiceDetail category={selectedCategory} />
         ) : (
-          <ServicesList />
+          <CategoriesList categories={categories} />
         )}
       </div>
     </div>
   );
 };
 
-const ServicesList = () => {
+const CategoriesList = ({ categories }: { categories: ServiceCategory[] }) => {
+  // Assign default icons for categories
+  const getCategoryIcon = (index: number) => {
+    const icons = [FileText, ShoppingBag, CreditCard, Package, FileText, ShoppingBag];
+    return icons[index % icons.length];
+  };
+
   return (
     <>
       <div className="mb-6 flex items-center">
@@ -112,35 +101,44 @@ const ServicesList = () => {
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-        {services.map((service) => (
-          <Link to={service.path} key={service.id}>
-            <Card className="hover:shadow-md transition-shadow h-full">
-              <div className="h-40 overflow-hidden">
-                <img 
-                  src={service.image} 
-                  alt={service.name} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <CardContent className="p-6">
-                <div className="flex items-start mb-4">
-                  <div className="mr-4 bg-imprisio-primary bg-opacity-10 p-3 rounded-full text-imprisio-primary">
-                    <service.icon className="h-6 w-6" />
+        {categories.length === 0 ? (
+          <div className="col-span-full text-center py-10">
+            <p className="text-gray-500">Aucune catégorie disponible pour le moment.</p>
+          </div>
+        ) : (
+          categories.map((category, index) => {
+            const IconComponent = getCategoryIcon(index);
+            return (
+              <Link to={`/category/${category.id}`} key={category.id}>
+                <Card className="hover:shadow-md transition-shadow h-full">
+                  <div className="h-40 overflow-hidden">
+                    <img 
+                      src={category.image_url || "https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?auto=format&fit=crop&q=80"} 
+                      alt={category.name} 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">{service.name}</h3>
-                    <p className="text-imprisio-primary font-medium">{service.price}</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 mb-4">{service.description}</p>
-                <Button className="w-full">
-                  Voir les détails
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                  <CardContent className="p-6">
+                    <div className="flex items-start mb-4">
+                      <div className="mr-4 bg-imprisio-primary bg-opacity-10 p-3 rounded-full text-imprisio-primary">
+                        <IconComponent className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1">{category.name}</h3>
+                        <p className="text-imprisio-primary font-medium">Voir les services</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mb-4">{category.description || "Découvrez nos services d'impression de qualité."}</p>
+                    <Button className="w-full">
+                      Voir les détails
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })
+        )}
       </div>
       
       <div className="bg-imprisio-light rounded-lg p-8 text-center">
@@ -154,7 +152,7 @@ const ServicesList = () => {
   );
 };
 
-const ServiceDetail = ({ service }: { service: Service }) => {
+const ServiceDetail = ({ category }: { category: ServiceCategory }) => {
   return (
     <>
       <div className="mb-8">
@@ -165,36 +163,42 @@ const ServiceDetail = ({ service }: { service: Service }) => {
         
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{service.name}</h1>
-            <p className="text-lg text-gray-600 mb-6">{service.description}</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">{category.name}</h1>
+            <p className="text-lg text-gray-600 mb-6">{category.description || "Découvrez nos services d'impression de qualité."}</p>
             
             <div className="mb-6">
               <h3 className="font-semibold mb-3">Caractéristiques</h3>
               <ul className="space-y-2">
-                {service.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start">
-                    <span className="text-imprisio-primary mr-2">✓</span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                <li className="flex items-start">
+                  <span className="text-imprisio-primary mr-2">✓</span>
+                  <span>Plusieurs formats disponibles</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-imprisio-primary mr-2">✓</span>
+                  <span>Papier de qualité</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-imprisio-primary mr-2">✓</span>
+                  <span>Livraison rapide</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-imprisio-primary mr-2">✓</span>
+                  <span>Petites et grandes quantités</span>
+                </li>
               </ul>
             </div>
             
-            <div className="mb-6">
-              <p className="text-xl font-semibold text-imprisio-primary">{service.price}</p>
-              <p className="text-sm text-gray-500">Prix variable selon quantités et options</p>
-            </div>
-            
             <div className="space-x-4">
-              <Button className="imprisio-button">Commander maintenant</Button>
-              <Button variant="outline">Voir les imprimeurs</Button>
+              <Link to={`/category/${category.id}`}>
+                <Button className="imprisio-button">Voir les services</Button>
+              </Link>
             </div>
           </div>
           
           <div className="rounded-lg overflow-hidden">
             <img 
-              src={service.image} 
-              alt={service.name} 
+              src={category.image_url || "https://images.unsplash.com/photo-1581093196277-9f397c262dc3?auto=format&fit=crop&q=80"} 
+              alt={category.name} 
               className="w-full h-auto"
             />
           </div>
@@ -210,9 +214,9 @@ const ServiceDetail = ({ service }: { service: Service }) => {
           </TabsList>
           
           <TabsContent value="description" className="p-6 bg-white border rounded-lg mt-4">
-            <h3 className="text-xl font-semibold mb-4">À propos de ce produit</h3>
+            <h3 className="text-xl font-semibold mb-4">À propos de cette catégorie</h3>
             <p className="text-gray-600 mb-4">
-              Nos {service.name.toLowerCase()} sont imprimés avec des encres de haute qualité sur des matériaux soigneusement sélectionnés. Que vous ayez besoin d'une petite ou d'une grande quantité, nous garantissons un résultat exceptionnel pour vos projets personnels ou professionnels.
+              Nos services de {category.name.toLowerCase()} sont imprimés avec des encres de haute qualité sur des matériaux soigneusement sélectionnés. Que vous ayez besoin d'une petite ou d'une grande quantité, nous garantissons un résultat exceptionnel pour vos projets personnels ou professionnels.
             </p>
             <p className="text-gray-600">
               Vous pouvez personnaliser entièrement votre commande en choisissant parmi différentes options de matériaux, de finitions et de formats. Notre équipe d'experts est à votre disposition pour vous conseiller tout au long du processus.
@@ -276,33 +280,8 @@ const ServiceDetail = ({ service }: { service: Service }) => {
           </TabsContent>
         </Tabs>
       </div>
-      
-      <div className="mt-12">
-        <h3 className="text-2xl font-bold mb-6">Autres services qui pourraient vous intéresser</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services
-            .filter(s => s.id !== service.id)
-            .slice(0, 3)
-            .map((relatedService) => (
-              <Link to={relatedService.path} key={relatedService.id}>
-                <Card className="hover:shadow-md transition-shadow h-full">
-                  <CardContent className="p-6">
-                    <div className="flex items-center mb-4">
-                      <div className="mr-3 bg-imprisio-primary bg-opacity-10 p-2 rounded-full text-imprisio-primary">
-                        <relatedService.icon className="h-5 w-5" />
-                      </div>
-                      <h3 className="font-semibold">{relatedService.name}</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm mb-4">{relatedService.description}</p>
-                    <p className="text-imprisio-primary font-medium">{relatedService.price}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-        </div>
-      </div>
     </>
   );
 };
 
-export default ServicesPage;
+export default Services;

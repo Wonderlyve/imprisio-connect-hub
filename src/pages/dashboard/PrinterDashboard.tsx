@@ -1,37 +1,36 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Package, ShoppingCart, TrendingUp, DollarSign,
-  User, Settings, Plus, Edit, Trash2, Printer, BadgePercent
+  User, Settings, Plus, Printer, BadgePercent
 } from 'lucide-react';
 import PrinterPromotions from './PrinterPromotions';
+import PrinterServices from './PrinterServices';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrders } from '@/hooks/use-orders';
+import { useProfile } from '@/hooks/use-profile';
 
 const PrinterDashboard = () => {
-  const printerInfo = {
-    name: "Imprimerie Express",
-    owner: "Marc Kabongo",
-    email: "contact@imprimerieexpress.cd",
-    phone: "+243 123 456 789",
-    address: "123 Avenue du Commerce, Gombe, Kinshasa"
+  const { currentUser } = useAuth();
+  const { orders, isLoading: ordersLoading, fetchOrders, updateOrderStatus } = useOrders();
+  const { isLoading: profileLoading } = useProfile();
+  const [activeTab, setActiveTab] = useState('commandes');
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    const result = await updateOrderStatus(orderId, newStatus);
+    if (result.success) {
+      fetchOrders();
+    }
   };
 
-  const recentOrders = [
-    { id: 'ORD-8723', date: '12/05/2023', client: 'Jean Muteba', product: 'Flyers A5 (x500)', status: 'Livré', price: '45.000 FC' },
-    { id: 'ORD-8724', date: '28/05/2023', client: 'Marie Mbongo', product: 'Cartes de visite (x200)', status: 'En production', price: '30.000 FC' },
-    { id: 'ORD-8725', date: '03/06/2023', client: 'Patrick Lemba', product: 'T-shirt personnalisé (x5)', status: 'En attente', price: '75.000 FC' },
-  ];
-
-  const products = [
-    { id: '1', name: 'Carte de visite standard', category: 'Cartes', price: '10.000 FC', sold: 125 },
-    { id: '2', name: 'Flyers A5 recto/verso', category: 'Flyers', price: '8.000 FC', sold: 230 },
-    { id: '3', name: 'Brochure A4 8 pages', category: 'Brochures', price: '25.000 FC', sold: 48 },
-    { id: '4', name: 'T-shirt personnalisé', category: 'Textile', price: '15.000 FC', sold: 92 },
-  ];
-
-  const [activeTab, setActiveTab] = useState('commandes');
+  const isLoading = ordersLoading || profileLoading;
 
   return (
     <div className="imprisio-section bg-white min-h-screen">
@@ -41,7 +40,7 @@ const PrinterDashboard = () => {
             <h1 className="text-3xl font-bold">Tableau de bord imprimeur</h1>
             <p className="text-gray-600">Gérez vos commandes, produits et votre boutique</p>
           </div>
-          <Button className="imprisio-button flex items-center gap-2">
+          <Button onClick={() => setActiveTab('produits')} className="imprisio-button flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Ajouter un produit
           </Button>
@@ -77,7 +76,7 @@ const PrinterDashboard = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Commandes totales</p>
-                      <h3 className="text-2xl font-bold">126</h3>
+                      <h3 className="text-2xl font-bold">{orders.length}</h3>
                     </div>
                   </div>
                 </CardContent>
@@ -91,7 +90,7 @@ const PrinterDashboard = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Commandes livrées</p>
-                      <h3 className="text-2xl font-bold">95</h3>
+                      <h3 className="text-2xl font-bold">{orders.filter(order => order.status === 'delivered').length}</h3>
                     </div>
                   </div>
                 </CardContent>
@@ -105,7 +104,7 @@ const PrinterDashboard = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Commandes en cours</p>
-                      <h3 className="text-2xl font-bold">31</h3>
+                      <h3 className="text-2xl font-bold">{orders.filter(order => order.status === 'processing').length}</h3>
                     </div>
                   </div>
                 </CardContent>
@@ -119,7 +118,11 @@ const PrinterDashboard = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Revenus totaux</p>
-                      <h3 className="text-2xl font-bold">3.245.000 FC</h3>
+                      <h3 className="text-2xl font-bold">
+                        {orders
+                          .reduce((sum, order) => sum + order.totalAmount, 0)
+                          .toLocaleString()} FC
+                      </h3>
                     </div>
                   </div>
                 </CardContent>
@@ -131,154 +134,80 @@ const PrinterDashboard = () => {
                 <CardTitle>Commandes récentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left border-b">
-                        <th className="pb-3 pr-4 font-medium">Référence</th>
-                        <th className="pb-3 pr-4 font-medium">Date</th>
-                        <th className="pb-3 pr-4 font-medium">Client</th>
-                        <th className="pb-3 pr-4 font-medium">Produit</th>
-                        <th className="pb-3 pr-4 font-medium">Statut</th>
-                        <th className="pb-3 pr-4 font-medium">Prix</th>
-                        <th className="pb-3 font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentOrders.map((order, index) => (
-                        <tr key={index} className="border-b last:border-0">
-                          <td className="py-4 pr-4">{order.id}</td>
-                          <td className="py-4 pr-4">{order.date}</td>
-                          <td className="py-4 pr-4">{order.client}</td>
-                          <td className="py-4 pr-4">{order.product}</td>
-                          <td className="py-4 pr-4">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              order.status === 'Livré' ? 'bg-green-100 text-green-700' : 
-                              order.status === 'En production' ? 'bg-blue-100 text-blue-700' : 
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="py-4 pr-4 font-medium">{order.price}</td>
-                          <td className="py-4">
-                            <div className="flex gap-2">
-                              <Button variant="ghost" size="sm">Détails</Button>
-                              <Button variant="outline" size="sm">MAJ statut</Button>
-                            </div>
-                          </td>
+                {isLoading ? (
+                  <div className="flex justify-center p-8">
+                    <div className="animate-spin h-8 w-8 border-4 border-imprisio-primary border-t-transparent rounded-full"></div>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Aucune commande n'a été trouvée</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left border-b">
+                          <th className="pb-3 pr-4 font-medium">Référence</th>
+                          <th className="pb-3 pr-4 font-medium">Date</th>
+                          <th className="pb-3 pr-4 font-medium">Client</th>
+                          <th className="pb-3 pr-4 font-medium">Produit</th>
+                          <th className="pb-3 pr-4 font-medium">Statut</th>
+                          <th className="pb-3 pr-4 font-medium">Prix</th>
+                          <th className="pb-3 font-medium">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 5).map((order) => (
+                          <tr key={order.id} className="border-b last:border-0">
+                            <td className="py-4 pr-4">{order.orderNumber}</td>
+                            <td className="py-4 pr-4">{new Date(order.createdAt).toLocaleDateString()}</td>
+                            <td className="py-4 pr-4">Client</td>
+                            <td className="py-4 pr-4">{order.serviceName}</td>
+                            <td className="py-4 pr-4">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                order.status === 'delivered' ? 'bg-green-100 text-green-700' : 
+                                order.status === 'processing' ? 'bg-blue-100 text-blue-700' : 
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="py-4 pr-4 font-medium">{order.totalAmount.toLocaleString()} FC</td>
+                            <td className="py-4">
+                              <div className="flex gap-2">
+                                <Button variant="ghost" size="sm">Détails</Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleStatusUpdate(
+                                    order.id,
+                                    order.status === 'pending' ? 'processing' : 
+                                    order.status === 'processing' ? 'delivered' : 'pending'
+                                  )}
+                                >
+                                  {order.status === 'pending' ? 'En production' : 
+                                   order.status === 'processing' ? 'Marquer livré' : 'Réinitialiser'}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
                 
-                <div className="mt-6 text-center">
-                  <Button variant="outline">Voir toutes les commandes</Button>
-                </div>
+                {orders.length > 0 && (
+                  <div className="mt-6 text-center">
+                    <Button variant="outline">Voir toutes les commandes</Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
           
           <TabsContent value="produits">
-            <Card className="mb-6">
-              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between">
-                <CardTitle>Mes produits</CardTitle>
-                <Button className="flex items-center gap-2 mt-4 sm:mt-0">
-                  <Plus className="h-4 w-4" />
-                  Nouveau produit
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left border-b">
-                        <th className="pb-3 pr-4 font-medium">Nom du produit</th>
-                        <th className="pb-3 pr-4 font-medium">Catégorie</th>
-                        <th className="pb-3 pr-4 font-medium">Prix</th>
-                        <th className="pb-3 pr-4 font-medium">Vendus</th>
-                        <th className="pb-3 font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((product, index) => (
-                        <tr key={index} className="border-b last:border-0">
-                          <td className="py-4 pr-4 font-medium">{product.name}</td>
-                          <td className="py-4 pr-4">{product.category}</td>
-                          <td className="py-4 pr-4">{product.price}</td>
-                          <td className="py-4 pr-4">{product.sold}</td>
-                          <td className="py-4">
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="flex items-center">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="outline" size="sm" className="flex items-center text-red-600 hover:text-red-700 hover:bg-red-50">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Produits les plus vendus</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {products.sort((a, b) => b.sold - a.sold).slice(0, 3).map((product, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-start">
-                          <div className="bg-imprisio-light w-10 h-10 rounded-md flex items-center justify-center mr-3">
-                            <span className="font-bold">{index + 1}</span>
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{product.name}</h4>
-                            <p className="text-sm text-gray-500">{product.category}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold">{product.sold} vendus</p>
-                          <p className="text-sm text-imprisio-primary">{product.price}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Catégories de produits</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {['Cartes', 'Flyers', 'Brochures', 'Textile'].map((category, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div 
-                            className={`w-3 h-3 rounded-full mr-3 ${
-                              ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-yellow-500'][index]
-                            }`}
-                          ></div>
-                          <span>{category}</span>
-                        </div>
-                        <span className="text-gray-600">
-                          {products.filter(p => p.category === category).length} produits
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <PrinterServices />
           </TabsContent>
 
           <TabsContent value="promotions">
@@ -293,63 +222,69 @@ const PrinterDashboard = () => {
                     <CardTitle>Informations de la boutique</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {isLoading ? (
+                      <div className="flex justify-center p-8">
+                        <div className="animate-spin h-8 w-8 border-4 border-imprisio-primary border-t-transparent rounded-full"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 mb-1 block">Nom de l'imprimerie</label>
+                            <input 
+                              type="text" 
+                              value={currentUser?.businessName || ""}
+                              className="w-full p-2 border rounded-md"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 mb-1 block">Propriétaire</label>
+                            <input 
+                              type="text" 
+                              value={currentUser?.fullName || ""}
+                              className="w-full p-2 border rounded-md"
+                              readOnly
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 mb-1 block">Email</label>
+                            <input 
+                              type="email" 
+                              value={currentUser?.email || ""}
+                              className="w-full p-2 border rounded-md"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-600 mb-1 block">Téléphone</label>
+                            <input 
+                              type="tel" 
+                              value={currentUser?.phone || ""}
+                              className="w-full p-2 border rounded-md"
+                              readOnly
+                            />
+                          </div>
+                        </div>
+                        
                         <div>
-                          <label className="text-sm font-medium text-gray-600 mb-1 block">Nom de l'imprimerie</label>
+                          <label className="text-sm font-medium text-gray-600 mb-1 block">Adresse</label>
                           <input 
                             type="text" 
-                            value={printerInfo.name} 
+                            value={currentUser?.businessAddress || ""}
                             className="w-full p-2 border rounded-md"
                             readOnly
                           />
                         </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600 mb-1 block">Propriétaire</label>
-                          <input 
-                            type="text" 
-                            value={printerInfo.owner} 
-                            className="w-full p-2 border rounded-md"
-                            readOnly
-                          />
+                        
+                        <div className="flex justify-end">
+                          <Button>Modifier les informations</Button>
                         </div>
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-600 mb-1 block">Email</label>
-                          <input 
-                            type="email" 
-                            value={printerInfo.email} 
-                            className="w-full p-2 border rounded-md"
-                            readOnly
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600 mb-1 block">Téléphone</label>
-                          <input 
-                            type="tel" 
-                            value={printerInfo.phone} 
-                            className="w-full p-2 border rounded-md"
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 mb-1 block">Adresse</label>
-                        <input 
-                          type="text" 
-                          value={printerInfo.address} 
-                          className="w-full p-2 border rounded-md"
-                          readOnly
-                        />
-                      </div>
-                      
-                      <div className="flex justify-end">
-                        <Button>Modifier les informations</Button>
-                      </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
                 
